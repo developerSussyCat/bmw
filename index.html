@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Echo Gallery</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: #10121a;
+      color: #fff;
+      font-family: system-ui, sans-serif;
+    }
+
+    main {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 100%;
+      min-height: 100vh;
+      padding: 12px;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    h1 {
+      position: absolute;
+      z-index: 20;
+      top: clamp(12px, 3vh, 30px);
+      margin: 0;
+      font-size: clamp(1.4rem, 4vw, 2.8rem);
+      text-align: center;
+      text-shadow: 0 0 18px #c28c3b;
+    }
+
+    /* Stationary track; each tile travels around its edge independently */
+    
+    .gallery {
+      position: relative;
+      z-index: 2;
+       --edge-inset: clamp(90px, 13vw, 150px);
+  width: calc(100vw - var(--edge-inset));
+  height: calc(100vh - var(--edge-inset));
+    }
+
+    .photo-wrap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: clamp(76px, 11vw, 124px);
+      aspect-ratio: 1;
+      border-radius: 12px;
+      offset-path: inset(0 round 0px);
+      offset-rotate: 0deg;
+      animation: travel-edge 60s linear infinite;
+      animation-delay: calc(var(--tile-index, 0) * -2s);
+    }
+
+    @keyframes travel-edge {
+      to {
+        offset-distance: 100%;
+      }
+    }
+
+    .photo {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border: 2px solid rgb(255 255 255 / 75%);
+      border-radius: inherit;
+      box-shadow: 0 8px 24px #0009;
+    }
+
+    .photo-wrap:nth-child(3n + 1) .photo {
+      --glow: #ff5fc8;
+      animation: photo-glow 3s ease-in-out infinite;
+    }
+
+    .photo-wrap:nth-child(3n + 2) .photo {
+      --glow: #ff9a45;
+      animation: photo-glow 3s ease-in-out infinite 1s;
+    }
+
+    .photo-wrap:nth-child(3n) .photo {
+      --glow: #80ff78;
+      animation: photo-glow 3s ease-in-out infinite 2s;
+    }
+
+    @keyframes photo-glow {
+      0%, 100% {
+        box-shadow: 0 8px 24px #0009;
+      }
+
+      50% {
+        box-shadow:
+          0 0 16px var(--glow),
+          0 0 30px color-mix(in srgb, var(--glow), transparent 45%);
+      }
+    }
+
+    /* Center spotlight images */
+    .spotlight {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      z-index: 30;
+      width: min(34vw, 280px);
+      aspect-ratio: 1;
+      object-fit: cover;
+      border: 3px solid #fff;
+      border-radius: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(.8);
+      box-shadow: 0 0 24px var(--glow), 0 0 48px var(--glow);
+      animation: spotlight 45s linear infinite;
+    }
+
+    .spotlight:nth-of-type(3n + 1) { --glow: #ff5fc8; }
+    .spotlight:nth-of-type(3n + 2) { --glow: #ff9a45; }
+    .spotlight:nth-of-type(3n)     { --glow: #80ff78; }
+
+    @keyframes spotlight {
+      0%, 5% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(.8);
+      }
+
+      6%, 12% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      13%, 100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(.8);
+      }
+    }
+
+    /* Colored blurred strokes */
+    .wave {
+      position: fixed;
+      z-index: 10;
+      width: clamp(90px, 18vw, 190px);
+      height: 5px;
+      border: 0;
+      border-radius: 50%;
+      opacity: 0;
+      filter: blur(5px);
+      pointer-events: none;
+      animation: stroke-pass 4.5s ease-in-out infinite;
+    }
+
+    .wave:nth-of-type(1) {
+      top: 18%;
+      left: 8%;
+      background: #ff64c8;
+      box-shadow: 0 0 14px #ff64c8, 0 0 28px #ff64c8;
+      transform: rotate(-28deg);
+    }
+
+    .wave:nth-of-type(2) {
+      top: 68%;
+      right: 8%;
+      background: #8cff75;
+      box-shadow: 0 0 14px #8cff75, 0 0 28px #8cff75;
+      transform: rotate(25deg);
+      animation-delay: 1s;
+    }
+
+    .wave:nth-of-type(3) {
+      top: 43%;
+      left: 38%;
+      background: #ff9a45;
+      box-shadow: 0 0 14px #ff9a45, 0 0 28px #ff9a45;
+      transform: rotate(-12deg);
+      animation-delay: 2s;
+    }
+
+    .wave:nth-of-type(4) {
+      top: 30%;
+      right: 14%;
+      background: #8cff75;
+      box-shadow: 0 0 14px #8cff75, 0 0 28px #8cff75;
+      transform: rotate(35deg);
+      animation-delay: 2.8s;
+    }
+
+    .wave:nth-of-type(5) {
+      bottom: 18%;
+      left: 16%;
+      background: #ff9a45;
+      box-shadow: 0 0 14px #ff9a45, 0 0 28px #ff9a45;
+      transform: rotate(-18deg);
+      animation-delay: 3.5s;
+    }
+
+    @keyframes stroke-pass {
+      0% {
+        opacity: 0;
+        clip-path: inset(0 100% 0 0);
+        translate: -25px 12px;
+      }
+
+      20% {
+        opacity: .8;
+      }
+
+      65% {
+        opacity: .65;
+        clip-path: inset(0 0 0 0);
+      }
+
+      100% {
+        opacity: 0;
+        clip-path: inset(0 0 0 100%);
+        translate: 25px -12px;
+      }
+    }
+
+    /* Floating hearts */
+    .heart {
+      position: fixed;
+      z-index: 35;
+      color: #ff78ba;
+      font-size: clamp(20px, 2.5vw, 32px);
+      text-shadow: 0 0 12px currentColor, 0 0 24px currentColor;
+      pointer-events: none;
+      opacity: 0;
+      animation: heart-float 3.6s ease-in-out infinite;
+    }
+
+    .heart.one {
+      top: 14%;
+      left: 13%;
+      font-size: clamp(22px, 2.7vw, 34px);
+    }
+
+    .heart.two {
+      top: 72%;
+      right: 16%;
+      color: #ff9a45;
+      animation-delay: 1s;
+    }
+
+    .heart.three {
+      top: 34%;
+      right: 12%;
+      color: #8cff75;
+      font-size: clamp(23px, 2.8vw, 35px);
+      animation-delay: 1.8s;
+    }
+
+    .heart.four {
+      bottom: 15%;
+      left: 22%;
+      color: #ff9a45;
+      animation-delay: 2.4s;
+    }
+
+    .heart.five {
+      top: 53%;
+      left: 7%;
+      animation-delay: 3s;
+    }
+
+    @keyframes heart-float {
+      0%, 100% {
+        opacity: 0;
+        transform: translateY(10px) scale(.75) rotate(-12deg);
+      }
+
+      18%, 68% {
+        opacity: .9;
+        transform: translateY(-8px) scale(1) rotate(10deg);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .gallery {
+    --edge-inset: clamp(72px, 20vw, 110px);
+    width: calc(100vw - var(--edge-inset));
+    height: calc(100vh - var(--edge-inset));
+    }
+      
+
+      .photo-wrap {
+        width: clamp(58px, 13vw, 82px);
+      }
+
+      .spotlight {
+        width: min(58vw, 230px);
+      }
+
+      .wave {
+        width: clamp(75px, 24vw, 140px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>Chezky.org 2.0!!</h1>
+
+    <div class="wave" aria-hidden="true"></div>
+    <div class="wave" aria-hidden="true"></div>
+    <div class="wave" aria-hidden="true"></div>
+    <div class="wave" aria-hidden="true"></div>
+    <div class="wave" aria-hidden="true"></div>
+
+    <span class="heart one" aria-hidden="true">♥</span>
+    <span class="heart two" aria-hidden="true">♥</span>
+    <span class="heart three" aria-hidden="true">♥</span>
+    <span class="heart four" aria-hidden="true">♥</span>
+    <span class="heart five" aria-hidden="true">♥</span>
+
+    <section class="gallery" aria-label="Photo gallery">
+      <div class="photo-wrap">
+        <img class="photo" src="/alt.webp" alt="Gallery image 1">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/image.webp" alt="Gallery image 2">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/image0.jpg" alt="Gallery image 3">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/image0.webp" alt="Gallery image 4">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/img024.webp" alt="Gallery image 5">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/img1.webp" alt="Gallery image 6">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/img2.webp" alt="Gallery image 7">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/img3.webp" alt="Gallery image 8">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/img4.webp" alt="Gallery image 9">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/img505.webp" alt="Gallery image 10">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/IMG_0427.webp" alt="Gallery image 11">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/IMG_1516.webp" alt="Gallery image 12">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/IMG_2388.mov" alt="Gallery image 13">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/Untitled_Artwork_1.webp" alt="Gallery image 14">
+      </div>
+      <div class="photo-wrap">
+        <img class="photo" src="/alt.webp" alt="Gallery image 15">
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const gallery = document.querySelector(".gallery");
+    const originalTiles = [...gallery.querySelectorAll(".photo-wrap")];
+
+    // Duplicate every tile once, preserving its existing image source.
+    originalTiles.forEach((tile, index) => {
+      tile.style.setProperty("--tile-index", index);
+
+      const clone = tile.cloneNode(true);
+      clone.style.setProperty("--tile-index", index + originalTiles.length);
+      clone.setAttribute("aria-hidden", "true");
+      clone.querySelector("img").alt = "";
+      gallery.appendChild(clone);
+    });
+
+    // Spotlight each original image in sequence.
+    originalTiles.forEach((tile, index) => {
+      const spotlight = document.createElement("img");
+      const source = tile.querySelector("img");
+
+      spotlight.className = "spotlight";
+      spotlight.src = source.getAttribute("src");
+      spotlight.alt = "";
+      spotlight.setAttribute("aria-hidden", "true");
+      spotlight.style.animationDelay = `${index * 3}s`;
+      document.body.appendChild(spotlight);
+    });
+  </script>
+</body>
+</html>
